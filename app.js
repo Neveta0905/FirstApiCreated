@@ -10,6 +10,9 @@ dotenv.config();
 const MY_PORT = process.env.PORT;
 const MY_APP_SECRET = process.env.APP_SECRET;
 
+// Hash module
+const crypter = require('./assets/functions/crypter')
+
 // Connect to Mongo
 const app = express()
 mongoose.connect('mongodb+srv://Neveta:12345@cluster0.7sr4f.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
@@ -34,22 +37,22 @@ let UserRouter = express.Router()
 
 	// Sign In
 	UserRouter.route('/signup')
-	.post(async (req,res) =>{
-		console.log(req.body)
-		const new_user = new model_user({
-			email:req.body.email,
-			password:req.body.password
+		.post(async (req,res) =>{
+			let hashed_pass= await crypter(req.body.password)
+			const new_user = new model_user({
+				email:req.body.email,
+				password:hashed_pass
+			})
+			new_user.save()
+				.then(()=>{res.status(201).json(({message:'user registered'}))})
+				.catch(error => res.status(400).json({msg:'je ne capte pas ' + new_user.email}))
 		})
-		new_user.save()
-			.then(()=>{res.status(201).json(({message:'user registered'}))})
-			.catch(error => res.status(400).json({msg:'je ne capte pas ' + new_user.email}))
-	})
 
 	// Log In
 	UserRouter.route('/login')
-	.post((req,res)=>{
-		res.json({message:'Je me connecte avec un mail et mdp'})
-	})
+		.post((req,res)=>{
+			res.json({message:'Je me connecte avec un mail et mdp'})
+		})
 
 // Definie User route
 app.use('/api/auth/',UserRouter)
