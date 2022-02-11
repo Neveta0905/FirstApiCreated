@@ -1,12 +1,24 @@
 const bcrpyt = require('bcrypt')
 
-const crypter = async (crypted) =>{
+const crypter = async (tocrypt) =>{
 	return new Promise((next) =>{
-		bcrpyt.hash(crypted,10)
+		bcrpyt.hash(tocrypt,10)
 			.then((hashed)=>{
 				next(hashed)
 			})
 	})
 }
 
-module.exports = crypter;
+const decrypter = async(compared,crypted) => {
+	return new Promise((next) =>{
+		bcrpyt.compare(compared,crypted)
+			.then((res)=>{
+				if(res)
+					next(true)
+				else
+					next(false)
+			})
+			.catch(error => error)
+	})
+}
+module.exports = {crypter,decrypter};

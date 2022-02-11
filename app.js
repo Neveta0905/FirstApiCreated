@@ -11,7 +11,7 @@ const MY_PORT = process.env.PORT;
 const MY_APP_SECRET = process.env.APP_SECRET;
 
 // Hash module
-const crypter = require('./assets/functions/crypter')
+const {crypter,decrypter} = require('./assets/functions/crypter')
 
 // Connect to Mongo
 const app = express()
@@ -45,13 +45,26 @@ let UserRouter = express.Router()
 			})
 			new_user.save()
 				.then(()=>{res.status(201).json(({message:'user registered'}))})
-				.catch(error => res.status(400).json({msg:'je ne capte pas ' + new_user.email}))
+				.catch(error => res.status(400).json(error))
 		})
 
 	// Log In
 	UserRouter.route('/login')
-		.post((req,res)=>{
-			res.json({message:'Je me connecte avec un mail et mdp'})
+		.post(async (req,res)=>{
+			model_user.findOne({email : req.body.email})
+				.then(async (user) =>{
+					if(!user)
+						res.status(400).json({error: 'No such mail found'})
+					else{
+						let check_mdp = await decrypter(req.body.password,user.password)
+						if(!check_mdp){
+							res.status(400).json({error:'wrong password'})
+						}
+						else{
+							res.status(200).json({userId:user._id,token:"blablabla"})
+						}
+					}
+				})
 		})
 
 // Definie User route
