@@ -10,9 +10,6 @@ dotenv.config();
 const MY_PORT = process.env.PORT;
 const MY_APP_SECRET = process.env.APP_SECRET;
 
-// Hash module
-const {crypter,decrypter} = require('./assets/functions/crypter')
-
 // Connect to Mongo
 const app = express()
 mongoose.connect('mongodb+srv://Neveta:12345@cluster0.7sr4f.mongodb.net/myFirstDatabase?retryWrites=true&w=majority',
@@ -21,11 +18,9 @@ mongoose.connect('mongodb+srv://Neveta:12345@cluster0.7sr4f.mongodb.net/myFirstD
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
-// Mongo Model
-// Imports
-	// User
-		const model_user = require('./assets/models/User')
-	// Sauce
+//User model
+const user = require('./assets/models/user_log')
+
 
 // Use middleware
 app.use(morgan)
@@ -38,33 +33,17 @@ let UserRouter = express.Router()
 	// Sign In
 	UserRouter.route('/signup')
 		.post(async (req,res) =>{
-			let hashed_pass= await crypter(req.body.password)
-			const new_user = new model_user({
-				email:req.body.email,
-				password:hashed_pass
-			})
-			new_user.save()
-				.then(()=>{res.status(201).json(({message:'user registered'}))})
-				.catch(error => res.status(400).json(error))
+			let new_user = await user.Signup(req.body.password,req.body.email)
+			res.json(new_user)
 		})
 
 	// Log In
 	UserRouter.route('/login')
 		.post(async (req,res)=>{
-			model_user.findOne({email : req.body.email})
-				.then(async (user) =>{
-					if(!user)
-						res.status(400).json({error: 'No such mail found'})
-					else{
-						let check_mdp = await decrypter(req.body.password,user.password)
-						if(!check_mdp){
-							res.status(400).json({error:'wrong password'})
-						}
-						else{
-							res.status(200).json({userId:user._id,token:"blablabla"})
-						}
-					}
-				})
+			user.Login(req.body.password,req.body.email)
+			.then((result)=>{
+				res.status(result.status).json(result)
+			})
 		})
 
 // Definie User route
