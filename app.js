@@ -1,7 +1,8 @@
 const express = require('express')
 const morgan = require('morgan')('dev')
-/*const bodyPaser = require('body-parser')*/
+const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
+const path = require('path');
 
 // Dotenv to config port
 const dotenv = require("dotenv");
@@ -18,6 +19,9 @@ mongoose.connect(process.env.MONGO,
 app.use(morgan)
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // CORS
 app.use((req, res, next) => {
