@@ -62,12 +62,24 @@ exports.modifySauces = (req,res) =>{
 exports.deleteSauces = (req,res) =>{
 	model_sauces.findOne({ _id: req.params.id })
 	.then( sauce => {
-		const filename = sauce.imageUrl.split('/images/')[1]
-		fs.unlink(`images/${filename}`, () =>{
-			model_sauces.deleteOne({ _id : req.params.id }) // Sauce Deletion
-			.then( () => res.status(200).json({message: 'Sauce supprimée'}))
-			.catch(error => res.status(404).json({error}))
-		})
+		if(!sauce){
+			res.status(404).json({error:new Error('Sauce not found')})
+		}
+		if(sauce.userId !== req.auth.userId){
+			res.status(403).json({
+				error: new Error('Unauthorized request')
+			})
+		} else{
+			const filename = sauce.imageUrl.split('/images/')[1]
+			fs.unlink(`images/${filename}`, () =>{
+				model_sauces.deleteOne({ _id : req.params.id }) // Sauce Deletion
+				.then( () => res.status(200).json({message: 'Sauce supprimée'}))
+				.catch(error => res.status(404).json({error}))
+			})
+		}
+	})
+	.catch((error) => {
+		res.status(400).json({error:error})
 	})
 }
 
