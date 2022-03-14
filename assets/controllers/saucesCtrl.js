@@ -8,7 +8,6 @@ exports.getSauces = (req,res) =>{
 }
 
 exports.addSauces = (req,res,next) =>{
-	console.log(req.file)
 	const Objsauce = JSON.parse(req.body.sauce); // Transforme la string sauce en Obj
 	delete Objsauce._id; // Supprime une clés id en trop
 
