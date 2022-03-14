@@ -1,5 +1,5 @@
 const express = require('express')
-const morgan = require('morgan')('dev')
+const helmet = require("helmet");
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const path = require('path');
@@ -16,8 +16,8 @@ mongoose.connect(process.env.MONGO,
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 // Use middleware
-app.use(morgan)
 app.use(express.json()) // for parsing application/json
+
 app.use(express.urlencoded({ extended: true }))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
@@ -30,6 +30,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
   next();
 });
+app.use(helmet());
 
 
 // Import User Router
